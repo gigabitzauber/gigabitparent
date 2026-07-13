@@ -1,0 +1,30 @@
+name: release-workflow
+run-name: Release run ${{ github.run_number }}
+on:
+  workflow_dispatch:
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-package: 'jre'
+          java-version: '25'
+          check-latest: true
+          server-id: 'central'
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+          cache: 'maven'
+      - name: Build & Deploy
+        run: |
+          mvn -U -B clean deploy -P release
+        env:
+          SIGN_KEY: ${{ secrets.GIGABITZAUBER_GPG_PRIVATE_KEY }}
+          SIGN_KEY_PASS: ${{ secrets.GIGABITZAUBER_GPG_PRIVATE_KEY_PASSPHRASE }}
+          MAVEN_USERNAME: ${{ secrets.GIGABITZAUBER_SONATYPE_TOKEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.GIGABITZAUBER_SONATYPE_TOKEN_PASSWORD }}
